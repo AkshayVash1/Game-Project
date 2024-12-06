@@ -1,0 +1,41 @@
+[gd_scene load_steps=3 format=3 uid="uid://yhoqtf1qeo54"]
+
+[ext_resource type="Script" path="res://scripts/HealthBar.gd" id="1_82lev"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nifgv"]
+
+[node name="HealthBar" type="ProgressBar" node_paths=PackedStringArray("hp_label")]
+custom_minimum_size = Vector2(30, 50)
+offset_right = 30.0
+offset_bottom = 50.0
+size_flags_horizontal = 3
+size_flags_vertical = 4
+size_flags_stretch_ratio = 1.33
+theme_override_styles/fill = SubResource("StyleBoxFlat_nifgv")
+value = 100.0
+show_percentage = false
+script = ExtResource("1_82lev")
+hp_label = NodePath("Label")
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -106.0
+offset_top = -25.5
+offset_right = 106.0
+offset_bottom = 25.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 6
+theme_override_font_sizes/font_size = 37
+text = "HP: 100/100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="value_changed" from="." to="." method="_on_value_changed"]
