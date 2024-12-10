@@ -259,6 +259,10 @@ animations = [{
 "speed": 10.0
 }]
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_00b6o"]
+atlas = ExtResource("4_lef60")
+region = Rect2(0, 0, 128, 128)
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_ox17h"]
 atlas = ExtResource("2_7j5jy")
 region = Rect2(0, 0, 128, 128)
@@ -294,10 +298,6 @@ region = Rect2(0, 0, 128, 128)
 [sub_resource type="AtlasTexture" id="AtlasTexture_ym6ex"]
 atlas = ExtResource("3_6dnma")
 region = Rect2(128, 0, 128, 128)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_00b6o"]
-atlas = ExtResource("4_lef60")
-region = Rect2(0, 0, 128, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_cdwcm"]
 atlas = ExtResource("4_lef60")
@@ -411,6 +411,9 @@ region = Rect2(512, 0, 128, 128)
 animations = [{
 "frames": [{
 "duration": 1.0,
+"texture": SubResource("AtlasTexture_00b6o")
+}, {
+"duration": 1.0,
 "texture": SubResource("AtlasTexture_ox17h")
 }, {
 "duration": 1.0,
@@ -487,6 +490,9 @@ animations = [{
 "speed": 10.0
 }, {
 "frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_00b6o")
+}, {
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_wghaj")
 }, {
@@ -596,7 +602,6 @@ scale = Vector2(2.51389, 2.55814)
 sprite_frames = SubResource("SpriteFrames_1aa2o")
 animation = &"idle"
 autoplay = "idle"
-frame_progress = 0.978075
 flip_h = true
 
 [node name="Wolf" type="AnimatedSprite2D" parent="."]
@@ -605,7 +610,6 @@ scale = Vector2(3.18359, 2.98828)
 sprite_frames = SubResource("SpriteFrames_8eauk")
 animation = &"idle"
 autoplay = "idle"
-frame_progress = 0.179963
 
 [node name="EnemyContainer" type="VBoxContainer" parent="Wolf"]
 anchors_preset = 15
@@ -622,6 +626,7 @@ alignment = 1
 [node name="HealthBarEnemy" parent="Wolf" instance=ExtResource("17_irwwl")]
 unique_name_in_owner = true
 visible = false
+self_modulate = Color(1, 0, 0.2, 1)
 custom_minimum_size = Vector2(5, 10)
 anchors_preset = 8
 anchor_left = 0.5
@@ -665,6 +670,7 @@ vertical_alignment = 1
 
 [node name="HealthBar" parent="PlayerPanel/PlayerData" instance=ExtResource("17_irwwl")]
 unique_name_in_owner = true
+self_modulate = Color(1, 0, 0.2, 1)
 layout_mode = 2
 
 [node name="Actions" type="Panel" parent="."]

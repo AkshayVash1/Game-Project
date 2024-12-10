@@ -16,15 +16,16 @@ func _process(delta: float) -> void:
 	var progress_value = value / max_value
 	
 	if progress_value > minGreenHealth:
-		modulate = FullHealth
+		self_modulate = FullHealth
 	elif progress_value > minYellowHealth:
-		modulate = HalfHealth
+		self_modulate = HalfHealth
 	elif progress_value > minRedHealth && get_parent().name == "PlayerData":
-		modulate = LowHealth
+		self_modulate = LowHealth
 		if not $Animate.is_playing():
 			$Animate.play("flash")
 	else:
-		modulate = NoHealth
+		self_modulate = NoHealth
+		$Label.self_modulate = LowHealth
 
 func _on_value_changed(value: float) -> void:
 	$Label.text = "HP: %d/%d" % [int(value), int(max_value)]
