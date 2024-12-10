@@ -1,4 +1,4 @@
-[gd_scene load_steps=89 format=3 uid="uid://nbfk5l0patej"]
+[gd_scene load_steps=90 format=3 uid="uid://nbfk5l0patej"]
 
 [ext_resource type="Texture2D" uid="uid://dmylf8sdefch6" path="res://assets/battleback1_0.png" id="1_35py8"]
 [ext_resource type="Texture2D" uid="uid://cs6n5m1nu7q1v" path="res://sprites/Wolf/Run+Attack.png" id="2_7j5jy"]
@@ -16,6 +16,7 @@
 [ext_resource type="Texture2D" uid="uid://chak360u5lc2u" path="res://sprites/Knight 2/Run.png" id="14_74ak0"]
 [ext_resource type="Texture2D" uid="uid://bj3rf2ot2n06u" path="res://sprites/Knight 2/Run+Attack.png" id="15_h4g6b"]
 [ext_resource type="FontFile" uid="uid://com2xb271sm7b" path="res://fonts/NESCyrillic.ttf" id="16_eqlww"]
+[ext_resource type="PackedScene" uid="uid://yhoqtf1qeo54" path="res://scenes/health_bar.tscn" id="17_irwwl"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wcw2r"]
 atlas = ExtResource("9_525wn")
@@ -258,6 +259,10 @@ animations = [{
 "speed": 10.0
 }]
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_00b6o"]
+atlas = ExtResource("4_lef60")
+region = Rect2(0, 0, 128, 128)
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_ox17h"]
 atlas = ExtResource("2_7j5jy")
 region = Rect2(0, 0, 128, 128)
@@ -293,10 +298,6 @@ region = Rect2(0, 0, 128, 128)
 [sub_resource type="AtlasTexture" id="AtlasTexture_ym6ex"]
 atlas = ExtResource("3_6dnma")
 region = Rect2(128, 0, 128, 128)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_00b6o"]
-atlas = ExtResource("4_lef60")
-region = Rect2(0, 0, 128, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_cdwcm"]
 atlas = ExtResource("4_lef60")
@@ -410,6 +411,9 @@ region = Rect2(512, 0, 128, 128)
 animations = [{
 "frames": [{
 "duration": 1.0,
+"texture": SubResource("AtlasTexture_00b6o")
+}, {
+"duration": 1.0,
 "texture": SubResource("AtlasTexture_ox17h")
 }, {
 "duration": 1.0,
@@ -487,6 +491,9 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
+"texture": SubResource("AtlasTexture_00b6o")
+}, {
+"duration": 1.0,
 "texture": SubResource("AtlasTexture_wghaj")
 }, {
 "duration": 1.0,
@@ -550,29 +557,30 @@ animations = [{
 "speed": 10.0
 }]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cs0w5"]
-bg_color = Color(0.87, 0, 0, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0, 0, 0, 1)
-border_blend = true
+[sub_resource type="GDScript" id="GDScript_mfifw"]
+script/source = "extends HBoxContainer
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_052dc"]
-bg_color = Color(0.313333, 0.94, 0, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.02, 0.02, 0.02, 1)
-border_blend = true
+func toggle_buttons(disable: bool) -> void:
+	for child in get_children():
+		if child is Button:
+			child.disabled = disable
+"
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q4m4s"]
 bg_color = Color(1, 1, 1, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ievnh"]
 bg_color = Color(1, 1, 1, 1)
+
+[sub_resource type="GDScript" id="GDScript_2okb1"]
+resource_name = "basicAttack"
+script/source = "extends Button
+
+func _on_button_up() -> void:
+	%Actions.toggle_buttons(true)
+	%HealthBar.reduce_health(15)
+	%HealthBarEnemy.reduce_health(15)
+"
 
 [node name="Battle" type="Control"]
 layout_mode = 3
@@ -594,7 +602,6 @@ scale = Vector2(2.51389, 2.55814)
 sprite_frames = SubResource("SpriteFrames_1aa2o")
 animation = &"idle"
 autoplay = "idle"
-frame_progress = 0.978075
 flip_h = true
 
 [node name="Wolf" type="AnimatedSprite2D" parent="."]
@@ -603,7 +610,6 @@ scale = Vector2(3.18359, 2.98828)
 sprite_frames = SubResource("SpriteFrames_8eauk")
 animation = &"idle"
 autoplay = "idle"
-frame_progress = 0.179963
 
 [node name="EnemyContainer" type="VBoxContainer" parent="Wolf"]
 anchors_preset = 15
@@ -616,6 +622,22 @@ offset_bottom = -34.4965
 grow_horizontal = 2
 grow_vertical = 2
 alignment = 1
+
+[node name="HealthBarEnemy" parent="Wolf" instance=ExtResource("17_irwwl")]
+unique_name_in_owner = true
+visible = false
+self_modulate = Color(1, 0, 0.2, 1)
+custom_minimum_size = Vector2(5, 10)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -92.5
+offset_top = -69.0
+offset_right = 67.5
+offset_bottom = -54.0
+scale = Vector2(0.5, 0.5)
 
 [node name="PlayerPanel" type="Panel" parent="."]
 layout_mode = 1
@@ -646,38 +668,10 @@ theme_override_font_sizes/font_size = 50
 text = "Player"
 vertical_alignment = 1
 
-[node name="ProgressBar" type="ProgressBar" parent="PlayerPanel/PlayerData"]
-custom_minimum_size = Vector2(30, 50)
+[node name="HealthBar" parent="PlayerPanel/PlayerData" instance=ExtResource("17_irwwl")]
+unique_name_in_owner = true
+self_modulate = Color(1, 0, 0.2, 1)
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-size_flags_stretch_ratio = 1.33
-theme_override_styles/background = SubResource("StyleBoxFlat_cs0w5")
-theme_override_styles/fill = SubResource("StyleBoxFlat_052dc")
-value = 50.0
-show_percentage = false
-
-[node name="Label" type="Label" parent="PlayerPanel/PlayerData/ProgressBar"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -37.0
-offset_top = -11.5
-offset_right = 37.0
-offset_bottom = 11.5
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/shadow_outline_size = 6
-theme_override_fonts/font = ExtResource("16_eqlww")
-theme_override_font_sizes/font_size = 37
-text = "HP: 25/50
-"
-vertical_alignment = 1
 
 [node name="Actions" type="Panel" parent="."]
 layout_mode = 1
@@ -692,14 +686,16 @@ grow_vertical = 0
 metadata/_edit_use_anchors_ = true
 
 [node name="Actions" type="HBoxContainer" parent="Actions"]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = SubResource("GDScript_mfifw")
 
-[node name="Button" type="Button" parent="Actions/Actions"]
+[node name="Basic Attack" type="Button" parent="Actions/Actions"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 5
@@ -710,8 +706,9 @@ theme_override_font_sizes/font_size = 31
 theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxFlat_q4m4s")
 theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_ievnh")
 text = "Basic Attack"
+script = SubResource("GDScript_2okb1")
 
-[node name="Button2" type="Button" parent="Actions/Actions"]
+[node name="Special Attack" type="Button" parent="Actions/Actions"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 5
@@ -723,7 +720,7 @@ theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxFlat_q4m4s")
 theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_ievnh")
 text = "Special Attack"
 
-[node name="Button3" type="Button" parent="Actions/Actions"]
+[node name="Items" type="Button" parent="Actions/Actions"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 5
@@ -734,3 +731,5 @@ theme_override_font_sizes/font_size = 31
 theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxFlat_q4m4s")
 theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_ievnh")
 text = "Items"
+
+[connection signal="button_up" from="Actions/Actions/Basic Attack" to="Actions/Actions/Basic Attack" method="_on_button_up"]
