@@ -9,6 +9,8 @@ var minGreenHealth = 0.5
 var minYellowHealth = 0.2
 var minRedHealth = 0
 
+var animation_name = "reduce_health"
+
 func _ready() -> void:
 	$Label.scale = scale
 
@@ -34,11 +36,12 @@ func reduce_health(health_to_loose: int) -> void:
 	var target_value = value - max_value * 0.01 * health_to_loose
 	if target_value < 0:
 		target_value = 0
-	var animation = $Animate.get_animation("reduce_health")
+	var animation = $Animate.get_animation(animation_name)
 	if animation:
 		animation.track_set_key_value(0, 0, value)
 		animation.track_set_key_value(0, 1, target_value)
-		$Animate.play("reduce_health")
+		$Animate.play(animation_name)
 
 func enable_buttons() -> void:
-	%Actions.toggle_buttons(false)
+	if get_parent().name == "PlayerData" && value != 0:
+		%Actions.toggle_buttons(false)
