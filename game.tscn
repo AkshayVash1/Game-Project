@@ -152,7 +152,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_wfjvj")
 }],
-"loop": true,
+"loop": false,
 "name": &"basic attack",
 "speed": 10.0
 }, {
@@ -160,7 +160,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_qi3bb")
 }],
-"loop": true,
+"loop": false,
 "name": &"block",
 "speed": 10.0
 }, {
@@ -183,7 +183,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_twg0i")
 }],
-"loop": true,
+"loop": false,
 "name": &"dead",
 "speed": 10.0
 }, {
@@ -194,7 +194,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_o768s")
 }],
-"loop": true,
+"loop": false,
 "name": &"hurt",
 "speed": 10.0
 }, {
@@ -254,7 +254,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_gn8w2")
 }],
-"loop": true,
+"loop": false,
 "name": &"special",
 "speed": 10.0
 }]
@@ -434,7 +434,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_816p8")
 }],
-"loop": true,
+"loop": false,
 "name": &"dash attack",
 "speed": 10.0
 }, {
@@ -445,7 +445,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_ym6ex")
 }],
-"loop": true,
+"loop": false,
 "name": &"dead",
 "speed": 10.0
 }, {
@@ -576,10 +576,42 @@ bg_color = Color(1, 1, 1, 1)
 resource_name = "basicAttack"
 script/source = "extends Button
 
+@export var knight: AnimatedSprite2D
+@export var wolf: AnimatedSprite2D
+@export var move_speed: float = 300.0
+@export var attack_distance: float = 200.0
+var attacking: bool = false
+var original_position: Vector2
+
 func _on_button_up() -> void:
 	%Actions.toggle_buttons(true)
-	%HealthBar.reduce_health(15)
-	%HealthBarEnemy.reduce_health(15)
+	original_position = knight.position
+	knight.z_index = 1
+	knight.play(\"run\")
+	attacking = true
+	set_process(true)
+
+func _process(delta):
+	if attacking:
+		var distance_to_wolf = knight.position.distance_to(wolf.position)
+		if distance_to_wolf > attack_distance:
+			move_knight_towards_wolf(delta)
+		else:
+			set_process(false)
+			attacking = false
+			knight.play(\"basic attack\")
+			
+func move_knight_towards_wolf(delta):
+	var direction = sign(wolf.position.x - knight.position.x)
+	knight.position.x += direction * move_speed * delta
+
+func _on_knight_animation_finished() -> void:
+	if knight.animation != \"idle\":
+		if knight.animation == \"basic attack\":
+			%HealthBarEnemy.reduce_health(15)
+		knight.play(\"idle\")
+		knight.position = original_position
+		knight.z_index = 0
 "
 
 [node name="Battle" type="Control"]
@@ -600,7 +632,7 @@ texture = ExtResource("1_35py8")
 position = Vector2(867, 396)
 scale = Vector2(2.51389, 2.55814)
 sprite_frames = SubResource("SpriteFrames_1aa2o")
-animation = &"idle"
+animation = &"basic attack"
 autoplay = "idle"
 flip_h = true
 
@@ -608,7 +640,7 @@ flip_h = true
 position = Vector2(153, 302)
 scale = Vector2(3.18359, 2.98828)
 sprite_frames = SubResource("SpriteFrames_8eauk")
-animation = &"idle"
+animation = &"hurt"
 autoplay = "idle"
 
 [node name="EnemyContainer" type="VBoxContainer" parent="Wolf"]
@@ -625,7 +657,6 @@ alignment = 1
 
 [node name="HealthBarEnemy" parent="Wolf" instance=ExtResource("17_irwwl")]
 unique_name_in_owner = true
-visible = false
 self_modulate = Color(1, 0, 0.2, 1)
 custom_minimum_size = Vector2(5, 10)
 anchors_preset = 8
@@ -695,7 +726,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = SubResource("GDScript_mfifw")
 
-[node name="Basic Attack" type="Button" parent="Actions/Actions"]
+[node name="Basic Attack" type="Button" parent="Actions/Actions" node_paths=PackedStringArray("knight", "wolf")]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 5
@@ -707,6 +738,8 @@ theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxFlat_q4m4s")
 theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_ievnh")
 text = "Basic Attack"
 script = SubResource("GDScript_2okb1")
+knight = NodePath("../../../Knight")
+wolf = NodePath("../../../Wolf")
 
 [node name="Special Attack" type="Button" parent="Actions/Actions"]
 layout_mode = 2
@@ -732,4 +765,5 @@ theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxFlat_q4m4s")
 theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_ievnh")
 text = "Items"
 
+[connection signal="animation_finished" from="Knight" to="Actions/Actions/Basic Attack" method="_on_knight_animation_finished"]
 [connection signal="button_up" from="Actions/Actions/Basic Attack" to="Actions/Actions/Basic Attack" method="_on_button_up"]

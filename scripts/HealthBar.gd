@@ -14,7 +14,7 @@ var animation_name = "reduce_health"
 func _ready() -> void:
 	$Label.scale = scale
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	var progress_value = value / max_value
 	
 	if progress_value > minGreenHealth:
@@ -29,7 +29,7 @@ func _process(delta: float) -> void:
 		self_modulate = NoHealth
 		$Label.self_modulate = LowHealth
 
-func _on_value_changed(value: float) -> void:
+func _on_value_changed(_value: float) -> void:
 	$Label.text = "HP: %d/%d" % [int(value), int(max_value)]
 
 func reduce_health(health_to_loose: int) -> void:
@@ -42,6 +42,10 @@ func reduce_health(health_to_loose: int) -> void:
 		animation.track_set_key_value(0, 1, target_value)
 		$Animate.play(animation_name)
 
-func enable_buttons() -> void:
-	if get_parent().name == "PlayerData" && value != 0:
+func _on_animate_animation_finished(_anim_name: StringName) -> void:
+	var progress_value = value / max_value
+	if progress_value == 0:
+		get_parent().play("dead")
+	else:
 		%Actions.toggle_buttons(false)
+		get_parent().play("hurt" if progress_value <= minYellowHealth else "idle")
