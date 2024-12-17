@@ -1,4 +1,4 @@
-[gd_scene load_steps=90 format=3 uid="uid://nbfk5l0patej"]
+[gd_scene load_steps=91 format=3 uid="uid://nbfk5l0patej"]
 
 [ext_resource type="Texture2D" uid="uid://dmylf8sdefch6" path="res://assets/battleback1_0.png" id="1_35py8"]
 [ext_resource type="Texture2D" uid="uid://cs6n5m1nu7q1v" path="res://sprites/Wolf/Run+Attack.png" id="2_7j5jy"]
@@ -558,12 +558,36 @@ animations = [{
 }]
 
 [sub_resource type="GDScript" id="GDScript_mfifw"]
+resource_name = "actions"
 script/source = "extends HBoxContainer
 
+@export var move_speed: float = 300.0
+@export var attack_distance: float = 200.0
+var original_position: Vector2
+
+func _on_ready() -> void:
+	original_position = %Knight.position
+
 func toggle_buttons(disable: bool) -> void:
+	%Knight.z_index = 1
 	for child in get_children():
 		if child is Button:
 			child.disabled = disable
+
+func move_knight_towards_wolf(delta):
+	var direction = sign(%Wolf.position.x - %Knight.position.x)
+	%Knight.position.x += direction * move_speed * delta
+
+func _on_knight_animation_finished() -> void:
+	if %Knight.animation != \"idle\":
+		if %Knight.animation == \"basic attack\":
+			%HealthBarEnemy.reduce_health(15)
+		if %Knight.animation == \"special\":
+			%HealthBarEnemy.reduce_health(25)
+			$\"Special Attack\".special = false
+		%Knight.play(\"idle\")
+		%Knight.position = original_position
+		%Knight.z_index = 0
 "
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q4m4s"]
@@ -576,42 +600,44 @@ bg_color = Color(1, 1, 1, 1)
 resource_name = "basicAttack"
 script/source = "extends Button
 
-@export var knight: AnimatedSprite2D
-@export var wolf: AnimatedSprite2D
-@export var move_speed: float = 300.0
-@export var attack_distance: float = 200.0
 var attacking: bool = false
-var original_position: Vector2
 
 func _on_button_up() -> void:
 	%Actions.toggle_buttons(true)
-	original_position = knight.position
-	knight.z_index = 1
-	knight.play(\"run\")
+	%Knight.play(\"run\")
 	attacking = true
-	set_process(true)
 
 func _process(delta):
 	if attacking:
-		var distance_to_wolf = knight.position.distance_to(wolf.position)
-		if distance_to_wolf > attack_distance:
-			move_knight_towards_wolf(delta)
+		var distance_to_wolf = %Knight.position.distance_to(%Wolf.position)
+		if distance_to_wolf > %Actions.attack_distance:
+			%Actions.move_knight_towards_wolf(delta)
 		else:
-			set_process(false)
 			attacking = false
-			knight.play(\"basic attack\")
-			
-func move_knight_towards_wolf(delta):
-	var direction = sign(wolf.position.x - knight.position.x)
-	knight.position.x += direction * move_speed * delta
+			%Knight.play(\"basic attack\")
+"
 
-func _on_knight_animation_finished() -> void:
-	if knight.animation != \"idle\":
-		if knight.animation == \"basic attack\":
-			%HealthBarEnemy.reduce_health(15)
-		knight.play(\"idle\")
-		knight.position = original_position
-		knight.z_index = 0
+[sub_resource type="GDScript" id="GDScript_g2mqt"]
+resource_name = "specialAttack"
+script/source = "extends Button
+
+var attacking: bool = false
+@export var special: bool = false
+
+func _on_button_up() -> void:
+	%Actions.toggle_buttons(true)
+	%Knight.play(\"run\")
+	attacking = true
+	special = true
+
+func _process(delta):
+	if attacking:
+		var distance_to_wolf = %Knight.position.distance_to(%Wolf.position)
+		if distance_to_wolf <= (%Actions.attack_distance + 100):
+			%Knight.play(\"special\")
+			attacking = false
+	if special:
+		%Actions.move_knight_towards_wolf(delta)
 "
 
 [node name="Battle" type="Control"]
@@ -629,6 +655,7 @@ offset_bottom = 648.0
 texture = ExtResource("1_35py8")
 
 [node name="Knight" type="AnimatedSprite2D" parent="."]
+unique_name_in_owner = true
 position = Vector2(867, 396)
 scale = Vector2(2.51389, 2.55814)
 sprite_frames = SubResource("SpriteFrames_1aa2o")
@@ -637,6 +664,7 @@ autoplay = "idle"
 flip_h = true
 
 [node name="Wolf" type="AnimatedSprite2D" parent="."]
+unique_name_in_owner = true
 position = Vector2(153, 302)
 scale = Vector2(3.18359, 2.98828)
 sprite_frames = SubResource("SpriteFrames_8eauk")
@@ -657,7 +685,6 @@ alignment = 1
 
 [node name="HealthBarEnemy" parent="Wolf" instance=ExtResource("17_irwwl")]
 unique_name_in_owner = true
-self_modulate = Color(1, 0, 0.2, 1)
 custom_minimum_size = Vector2(5, 10)
 anchors_preset = 8
 anchor_left = 0.5
@@ -701,7 +728,6 @@ vertical_alignment = 1
 
 [node name="HealthBar" parent="PlayerPanel/PlayerData" instance=ExtResource("17_irwwl")]
 unique_name_in_owner = true
-self_modulate = Color(1, 0, 0.2, 1)
 layout_mode = 2
 
 [node name="Actions" type="Panel" parent="."]
@@ -726,7 +752,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = SubResource("GDScript_mfifw")
 
-[node name="Basic Attack" type="Button" parent="Actions/Actions" node_paths=PackedStringArray("knight", "wolf")]
+[node name="Basic Attack" type="Button" parent="Actions/Actions"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 5
@@ -738,8 +764,6 @@ theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxFlat_q4m4s")
 theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_ievnh")
 text = "Basic Attack"
 script = SubResource("GDScript_2okb1")
-knight = NodePath("../../../Knight")
-wolf = NodePath("../../../Wolf")
 
 [node name="Special Attack" type="Button" parent="Actions/Actions"]
 layout_mode = 2
@@ -752,6 +776,7 @@ theme_override_font_sizes/font_size = 31
 theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxFlat_q4m4s")
 theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_ievnh")
 text = "Special Attack"
+script = SubResource("GDScript_g2mqt")
 
 [node name="Items" type="Button" parent="Actions/Actions"]
 layout_mode = 2
@@ -765,5 +790,8 @@ theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxFlat_q4m4s")
 theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_ievnh")
 text = "Items"
 
+[connection signal="animation_finished" from="Knight" to="Actions/Actions" method="_on_knight_animation_finished"]
 [connection signal="animation_finished" from="Knight" to="Actions/Actions/Basic Attack" method="_on_knight_animation_finished"]
+[connection signal="ready" from="Actions/Actions" to="Actions/Actions" method="_on_ready"]
 [connection signal="button_up" from="Actions/Actions/Basic Attack" to="Actions/Actions/Basic Attack" method="_on_button_up"]
+[connection signal="button_up" from="Actions/Actions/Special Attack" to="Actions/Actions/Special Attack" method="_on_button_up"]
