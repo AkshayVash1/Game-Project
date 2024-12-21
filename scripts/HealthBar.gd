@@ -15,6 +15,14 @@ func _ready() -> void:
 	$Label.scale = scale
 
 func _process(_delta: float) -> void:
+	if (get_parent().name != "PlayerData"):
+		# Move the progress bar above the head
+		var screen_position = %Camera3D.unproject_position(%Wolf.global_transform.origin)
+		screen_position.x = clamp(screen_position.x, 0, get_viewport().size.x - custom_minimum_size.x)
+		screen_position.y = clamp(screen_position.y, 0, get_viewport().size.y - custom_minimum_size.y)
+		position = screen_position
+
+	# Adjust health color according to value
 	var progress_value = value / max_value
 	
 	if progress_value > minGreenHealth:

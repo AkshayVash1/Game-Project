@@ -300,22 +300,9 @@ animations = [{
 "speed": 10.0
 }]
 
-[node name="Wolf" type="AnimatedSprite2D"]
-position = Vector2(114, 296)
-scale = Vector2(2, 2.20313)
+[node name="Wolf" type="AnimatedSprite3D"]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 114, 296, 0)
 sprite_frames = SubResource("SpriteFrames_8eauk")
 animation = &"idle"
 autoplay = "idle"
 frame_progress = 0.725294
-
-[node name="Enemy Container" type="VBoxContainer" parent="."]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -51.0
-offset_top = -34.4965
-offset_right = -51.0
-offset_bottom = -34.4965
-grow_horizontal = 2
-grow_vertical = 2
-alignment = 1
