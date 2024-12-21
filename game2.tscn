@@ -1,0 +1,589 @@
+[gd_scene load_steps=55 format=3 uid="uid://c5db4vwmnae0h"]
+
+[ext_resource type="FontFile" uid="uid://com2xb271sm7b" path="res://fonts/NESCyrillic.ttf" id="1_162im"]
+[ext_resource type="PackedScene" uid="uid://yhoqtf1qeo54" path="res://scenes/health_bar.tscn" id="2_unu36"]
+[ext_resource type="Texture2D" uid="uid://cacc4rvbfb0yk" path="res://sprites/Knight/Attack 1.png" id="8_h2xem"]
+[ext_resource type="PackedScene" uid="uid://ydahlsrkgsn4" path="res://scenes/wolf.tscn" id="8_sd3g5"]
+[ext_resource type="Texture2D" uid="uid://bkgdu0io80m22" path="res://sprites/Knight/Protect.png" id="9_fscqw"]
+[ext_resource type="Texture2D" uid="uid://bxge8m18ywn1k" path="res://sprites/Knight/Dead.png" id="10_r4nbh"]
+[ext_resource type="Texture2D" uid="uid://b3ay7g8d1kka0" path="res://sprites/Knight/Hurt.png" id="11_anbhg"]
+[ext_resource type="Texture2D" uid="uid://ct0owie12m20m" path="res://sprites/Knight/Idle.png" id="12_1uxqx"]
+[ext_resource type="Texture2D" uid="uid://chak360u5lc2u" path="res://sprites/Knight/Run.png" id="13_4ff8i"]
+[ext_resource type="Texture2D" uid="uid://bj3rf2ot2n06u" path="res://sprites/Knight/Run+Attack.png" id="14_vrsu6"]
+
+[sub_resource type="GDScript" id="GDScript_dae2h"]
+resource_name = "gameControl"
+script/source = "extends Node3D
+
+var rotation_speed: float = 0.5
+var orbit_radius: float = 6.0
+var angle: float = 0.5
+var enableRotation = false
+var midpoint : Vector3
+
+func _ready() -> void:
+	midpoint = (%Knight.global_transform.origin + %Wolf.global_transform.origin) * 0.5
+	%Camera3D.position = Vector3(midpoint.x, midpoint.y + orbit_radius, %Camera3D.position.z)
+	var x = midpoint.x + orbit_radius * cos(angle)
+	var z = midpoint.z + orbit_radius * sin(angle)
+	%Camera3D.position = Vector3(x, midpoint.y + orbit_radius, z)
+	%Camera3D.look_at(midpoint, Vector3.UP)
+func _process(delta: float) -> void:
+	if enableRotation:
+		angle += rotation_speed * delta
+		var x = midpoint.x + orbit_radius * cos(angle)
+		var z = midpoint.z + orbit_radius * sin(angle)
+		%Camera3D.position = Vector3(x, midpoint.y + orbit_radius, z)
+		%Camera3D.look_at(midpoint, Vector3.UP)
+		var flipped = int(angle / 3.2) % 2 == 1
+		%Knight.flip_h = !flipped
+		%Wolf.flip_h = flipped
+"
+
+[sub_resource type="GDScript" id="GDScript_wifws"]
+resource_name = "actions"
+script/source = "extends HBoxContainer
+
+@export var move_speed: float = 2.0
+@export var attack_distance: float = 2.0
+var original_position: Vector3
+
+func _on_ready() -> void:
+	original_position = %Knight.position
+
+func toggle_buttons(disable: bool) -> void:
+	for child in get_children():
+		if child is Button:
+			child.disabled = disable
+
+func move_knight_towards_wolf(delta):
+	var direction = sign(%Wolf.position.x - %Knight.position.x)
+	%Knight.position.x += direction * move_speed * delta
+
+func _on_knight_animation_finished() -> void:
+	if %Knight.animation != \"idle\":
+		if %Knight.animation == \"basic attack\":
+			%HealthBarEnemy.reduce_health(15)
+		if %Knight.animation == \"special\":
+			%HealthBarEnemy.reduce_health(25)
+			$\"Special Attack\".special = false
+		%Knight.play(\"idle\")
+		%Knight.position = original_position
+"
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_odfy0"]
+bg_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_erfxn"]
+bg_color = Color(1, 1, 1, 1)
+
+[sub_resource type="GDScript" id="GDScript_3ntas"]
+resource_name = "basicAttack"
+script/source = "extends Button
+
+var attacking: bool = false
+
+func _on_button_up() -> void:
+	%Actions.toggle_buttons(true)
+	%Knight.play(\"run\")
+	attacking = true
+
+func _process(delta):
+	if attacking:
+		var distance_to_wolf = %Knight.position.distance_to(%Wolf.position)
+		if distance_to_wolf > %Actions.attack_distance:
+			%Actions.move_knight_towards_wolf(delta)
+		else:
+			attacking = false
+			%Knight.play(\"basic attack\")
+"
+
+[sub_resource type="GDScript" id="GDScript_i2bar"]
+resource_name = "specialAttack"
+script/source = "extends Button
+
+var attacking: bool = false
+@export var special: bool = false
+
+func _on_button_up() -> void:
+	%Actions.toggle_buttons(true)
+	%Knight.play(\"run\")
+	attacking = true
+	special = true
+
+func _process(delta):
+	if attacking:
+		var distance_to_wolf = %Knight.position.distance_to(%Wolf.position)
+		if distance_to_wolf <= (%Actions.attack_distance):
+			%Knight.play(\"special\")
+			attacking = false
+	if special:
+		%Actions.move_knight_towards_wolf(delta)
+"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wcw2r"]
+atlas = ExtResource("8_h2xem")
+region = Rect2(0, 0, 85, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cye55"]
+atlas = ExtResource("8_h2xem")
+region = Rect2(85, 0, 85, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fj3eo"]
+atlas = ExtResource("8_h2xem")
+region = Rect2(170, 0, 85, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_uwl3e"]
+atlas = ExtResource("8_h2xem")
+region = Rect2(255, 0, 85, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wfjvj"]
+atlas = ExtResource("8_h2xem")
+region = Rect2(340, 0, 85, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qi3bb"]
+atlas = ExtResource("9_fscqw")
+region = Rect2(0, 0, 86, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ctygy"]
+atlas = ExtResource("10_r4nbh")
+region = Rect2(0, 0, 80, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4jdpp"]
+atlas = ExtResource("10_r4nbh")
+region = Rect2(80, 0, 80, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_f5koy"]
+atlas = ExtResource("10_r4nbh")
+region = Rect2(160, 0, 80, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_imuok"]
+atlas = ExtResource("10_r4nbh")
+region = Rect2(240, 0, 80, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yc2kx"]
+atlas = ExtResource("10_r4nbh")
+region = Rect2(320, 0, 80, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_twg0i"]
+atlas = ExtResource("10_r4nbh")
+region = Rect2(400, 0, 80, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_q3gns"]
+atlas = ExtResource("11_anbhg")
+region = Rect2(0, 0, 70, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_o768s"]
+atlas = ExtResource("11_anbhg")
+region = Rect2(70, 0, 70, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ad3k3"]
+atlas = ExtResource("12_1uxqx")
+region = Rect2(6, 0, 68, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jk76q"]
+atlas = ExtResource("12_1uxqx")
+region = Rect2(74, 0, 68, 86)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_nu1ym"]
+load_path = "res://.godot/imported/newIdle.png-a4510756c205a9cdb8c690980e376e84.s3tc.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lixhq"]
+atlas = SubResource("CompressedTexture2D_nu1ym")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ranuj"]
+atlas = SubResource("CompressedTexture2D_nu1ym")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gqcsx"]
+atlas = SubResource("CompressedTexture2D_nu1ym")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sdwrw"]
+atlas = SubResource("CompressedTexture2D_nu1ym")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7imsh"]
+atlas = ExtResource("13_4ff8i")
+region = Rect2(0, 0, 71, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fl6jl"]
+atlas = ExtResource("13_4ff8i")
+region = Rect2(71, 0, 71, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dw2dv"]
+atlas = ExtResource("13_4ff8i")
+region = Rect2(142, 0, 71, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dsl36"]
+atlas = ExtResource("13_4ff8i")
+region = Rect2(213, 0, 71, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yau22"]
+atlas = ExtResource("13_4ff8i")
+region = Rect2(284, 0, 71, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1f3hf"]
+atlas = ExtResource("13_4ff8i")
+region = Rect2(355, 0, 71, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_klxnm"]
+atlas = ExtResource("13_4ff8i")
+region = Rect2(426, 0, 71, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_n805k"]
+atlas = ExtResource("14_vrsu6")
+region = Rect2(0, 0, 73, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hxaar"]
+atlas = ExtResource("14_vrsu6")
+region = Rect2(73, 0, 73, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_h380y"]
+atlas = ExtResource("14_vrsu6")
+region = Rect2(146, 0, 73, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jv0j2"]
+atlas = ExtResource("14_vrsu6")
+region = Rect2(219, 0, 73, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_g3riu"]
+atlas = ExtResource("14_vrsu6")
+region = Rect2(292, 0, 73, 86)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gn8w2"]
+atlas = ExtResource("14_vrsu6")
+region = Rect2(365, 0, 73, 86)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_6grwj"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wcw2r")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cye55")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fj3eo")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_uwl3e")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wfjvj")
+}],
+"loop": false,
+"name": &"basic attack",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qi3bb")
+}],
+"loop": false,
+"name": &"block",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ctygy")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4jdpp")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f5koy")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_imuok")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yc2kx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_twg0i")
+}],
+"loop": false,
+"name": &"dead",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_q3gns")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_o768s")
+}],
+"loop": false,
+"name": &"hurt",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 2.2,
+"texture": SubResource("AtlasTexture_ad3k3")
+}, {
+"duration": 2.2,
+"texture": SubResource("AtlasTexture_jk76q")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_lixhq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ranuj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gqcsx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_sdwrw")
+}],
+"loop": true,
+"name": &"newIdle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7imsh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fl6jl")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dw2dv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dsl36")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yau22")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1f3hf")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_klxnm")
+}],
+"loop": true,
+"name": &"run",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n805k")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hxaar")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_h380y")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jv0j2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_g3riu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gn8w2")
+}],
+"loop": false,
+"name": &"special",
+"speed": 10.0
+}]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_mvx5j"]
+
+[sub_resource type="GDScript" id="GDScript_7wj5i"]
+resource_name = "floor"
+script/source = "extends StaticBody3D
+
+var grid_size: float = 0.001
+var grid_count: int = 100
+var floor_thickness: float = 0.1
+
+func _ready():
+	create_grid_floor()
+	create_collision_shape()
+
+func create_grid_floor() -> void:
+	var surface_tool = SurfaceTool.new()
+	surface_tool.begin(Mesh.PRIMITIVE_LINES)
+	
+	for i in range(-grid_count, grid_count + 1):
+		var start = Vector3(i * grid_size, 0, -grid_count * grid_size)
+		var end = Vector3(i * grid_size, 0, grid_count * grid_size)
+		surface_tool.add_vertex(start)
+		surface_tool.add_vertex(end)
+
+	for i in range(-grid_count, grid_count + 1):
+		var start = Vector3(-grid_count * grid_size, 0, i * grid_size)
+		var end = Vector3(grid_count * grid_size, 0, i * grid_size)
+		surface_tool.add_vertex(start)
+		surface_tool.add_vertex(end)
+
+	
+	var grid_mesh = surface_tool.commit()
+	$MeshInstance3D.mesh = grid_mesh
+
+	var material = StandardMaterial3D.new()
+	material.albedo_color = Color(0, 0, 0)
+	$MeshInstance3D.material_override = material
+
+func create_collision_shape() -> void:
+	$CollisionShape3D.shape.extents = Vector3(grid_count * grid_size, floor_thickness, grid_count * grid_size)
+"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_draum"]
+
+[node name="game" type="Node3D"]
+script = SubResource("GDScript_dae2h")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, 0.383022, -0.321394, 0, 0.642788, 0.766044, 0.5, -0.663414, 0.55667, -4.55133, 3, 5)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 5)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="Camera3D"]
+follow_viewport_enabled = true
+
+[node name="PlayerPanel" type="Panel" parent="Camera3D/CanvasLayer"]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -120.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="PlayerData" type="HBoxContainer" parent="Camera3D/CanvasLayer/PlayerPanel"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -0.0217014
+anchor_right = 0.978299
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 4
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" type="Label" parent="Camera3D/CanvasLayer/PlayerPanel/PlayerData"]
+layout_mode = 2
+size_flags_horizontal = 6
+theme_override_fonts/font = ExtResource("1_162im")
+theme_override_font_sizes/font_size = 50
+text = "Player"
+vertical_alignment = 1
+
+[node name="HealthBar" parent="Camera3D/CanvasLayer/PlayerPanel/PlayerData" instance=ExtResource("2_unu36")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Actions" type="Panel" parent="Camera3D/CanvasLayer"]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -648.0
+offset_bottom = -528.0
+grow_horizontal = 2
+grow_vertical = 0
+metadata/_edit_use_anchors_ = true
+
+[node name="Actions" type="HBoxContainer" parent="Camera3D/CanvasLayer/Actions"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_wifws")
+
+[node name="Basic Attack" type="Button" parent="Camera3D/CanvasLayer/Actions/Actions"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 5
+mouse_default_cursor_shape = 2
+theme_override_constants/outline_size = 10
+theme_override_fonts/font = ExtResource("1_162im")
+theme_override_font_sizes/font_size = 31
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxFlat_odfy0")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_erfxn")
+text = "Basic Attack"
+script = SubResource("GDScript_3ntas")
+
+[node name="Special Attack" type="Button" parent="Camera3D/CanvasLayer/Actions/Actions"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 5
+mouse_default_cursor_shape = 2
+theme_override_constants/outline_size = 10
+theme_override_fonts/font = ExtResource("1_162im")
+theme_override_font_sizes/font_size = 31
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxFlat_odfy0")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_erfxn")
+text = "Special Attack"
+script = SubResource("GDScript_i2bar")
+
+[node name="Items" type="Button" parent="Camera3D/CanvasLayer/Actions/Actions"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 5
+mouse_default_cursor_shape = 2
+theme_override_constants/outline_size = 10
+theme_override_fonts/font = ExtResource("1_162im")
+theme_override_font_sizes/font_size = 31
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxFlat_odfy0")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_erfxn")
+text = "Items"
+
+[node name="Knight" type="AnimatedSprite3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 3, 3, 0)
+billboard = 1
+sprite_frames = SubResource("SpriteFrames_6grwj")
+animation = &"newIdle"
+autoplay = "newIdle"
+
+[node name="Wolf" parent="." instance=ExtResource("8_sd3g5")]
+unique_name_in_owner = true
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, -3, 3.6, 0)
+billboard = 1
+
+[node name="HealthBarEnemy" parent="Wolf" instance=ExtResource("2_unu36")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(5, 10)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -92.5
+offset_top = -69.0
+offset_right = 67.5
+offset_bottom = -54.0
+scale = Vector2(0.5, 0.5)
+
+[node name="Floor" type="StaticBody3D" parent="."]
+physics_material_override = SubResource("PhysicsMaterial_mvx5j")
+script = SubResource("GDScript_7wj5i")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor"]
+shape = SubResource("BoxShape3D_draum")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor"]
+transform = Transform3D(1000, 0, 0, 0, 1000, 0, 0, 0, 1000, 0, 0, 0)
+
+[connection signal="ready" from="Camera3D/CanvasLayer/Actions/Actions" to="Camera3D/CanvasLayer/Actions/Actions" method="_on_ready"]
+[connection signal="button_up" from="Camera3D/CanvasLayer/Actions/Actions/Basic Attack" to="Camera3D/CanvasLayer/Actions/Actions/Basic Attack" method="_on_button_up"]
+[connection signal="button_up" from="Camera3D/CanvasLayer/Actions/Actions/Special Attack" to="Camera3D/CanvasLayer/Actions/Actions/Special Attack" method="_on_button_up"]
+[connection signal="animation_finished" from="Knight" to="Camera3D/CanvasLayer/Actions/Actions" method="_on_knight_animation_finished"]

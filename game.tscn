@@ -8,13 +8,13 @@
 [ext_resource type="Texture2D" uid="uid://dxro3m60vkf6j" path="res://sprites/Wolf/Run.png" id="6_np5u5"]
 [ext_resource type="Texture2D" uid="uid://deiak3kosmcko" path="res://sprites/Wolf/Attack_2.png" id="7_yf6nd"]
 [ext_resource type="Texture2D" uid="uid://cn12eiiqaa747" path="res://sprites/Wolf/Attack_3.png" id="8_pf1lm"]
-[ext_resource type="Texture2D" uid="uid://cacc4rvbfb0yk" path="res://sprites/Knight 2/Attack 1.png" id="9_525wn"]
-[ext_resource type="Texture2D" uid="uid://bkgdu0io80m22" path="res://sprites/Knight 2/Protect.png" id="10_rixi6"]
-[ext_resource type="Texture2D" uid="uid://bxge8m18ywn1k" path="res://sprites/Knight 2/Dead.png" id="11_tmhqq"]
-[ext_resource type="Texture2D" uid="uid://b3ay7g8d1kka0" path="res://sprites/Knight 2/Hurt.png" id="12_n47nk"]
-[ext_resource type="Texture2D" uid="uid://ct0owie12m20m" path="res://sprites/Knight 2/Idle.png" id="13_t5tn0"]
-[ext_resource type="Texture2D" uid="uid://chak360u5lc2u" path="res://sprites/Knight 2/Run.png" id="14_74ak0"]
-[ext_resource type="Texture2D" uid="uid://bj3rf2ot2n06u" path="res://sprites/Knight 2/Run+Attack.png" id="15_h4g6b"]
+[ext_resource type="Texture2D" uid="uid://cacc4rvbfb0yk" path="res://sprites/Knight/Attack 1.png" id="9_525wn"]
+[ext_resource type="Texture2D" uid="uid://bkgdu0io80m22" path="res://sprites/Knight/Protect.png" id="10_rixi6"]
+[ext_resource type="Texture2D" uid="uid://bxge8m18ywn1k" path="res://sprites/Knight/Dead.png" id="11_tmhqq"]
+[ext_resource type="Texture2D" uid="uid://b3ay7g8d1kka0" path="res://sprites/Knight/Hurt.png" id="12_n47nk"]
+[ext_resource type="Texture2D" uid="uid://ct0owie12m20m" path="res://sprites/Knight/Idle.png" id="13_t5tn0"]
+[ext_resource type="Texture2D" uid="uid://chak360u5lc2u" path="res://sprites/Knight/Run.png" id="14_74ak0"]
+[ext_resource type="Texture2D" uid="uid://bj3rf2ot2n06u" path="res://sprites/Knight/Run+Attack.png" id="15_h4g6b"]
 [ext_resource type="FontFile" uid="uid://com2xb271sm7b" path="res://fonts/NESCyrillic.ttf" id="16_eqlww"]
 [ext_resource type="PackedScene" uid="uid://yhoqtf1qeo54" path="res://scenes/health_bar.tscn" id="17_irwwl"]
 
@@ -640,21 +640,16 @@ func _process(delta):
 		%Actions.move_knight_towards_wolf(delta)
 "
 
-[node name="Battle" type="Control"]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="Game" type="CanvasLayer"]
 
-[node name="Background" type="TextureRect" parent="."]
-layout_mode = 0
+[node name="SubViewport" type="CanvasLayer" parent="."]
+
+[node name="Background" type="TextureRect" parent="SubViewport"]
 offset_right = 1152.0
 offset_bottom = 648.0
 texture = ExtResource("1_35py8")
 
-[node name="Knight" type="AnimatedSprite2D" parent="."]
+[node name="Knight" type="AnimatedSprite2D" parent="SubViewport"]
 unique_name_in_owner = true
 position = Vector2(867, 396)
 scale = Vector2(2.51389, 2.55814)
@@ -663,7 +658,7 @@ animation = &"basic attack"
 autoplay = "idle"
 flip_h = true
 
-[node name="Wolf" type="AnimatedSprite2D" parent="."]
+[node name="Wolf" type="AnimatedSprite2D" parent="SubViewport"]
 unique_name_in_owner = true
 position = Vector2(153, 302)
 scale = Vector2(3.18359, 2.98828)
@@ -671,7 +666,7 @@ sprite_frames = SubResource("SpriteFrames_8eauk")
 animation = &"hurt"
 autoplay = "idle"
 
-[node name="EnemyContainer" type="VBoxContainer" parent="Wolf"]
+[node name="EnemyContainer" type="VBoxContainer" parent="SubViewport/Wolf"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -683,7 +678,7 @@ grow_horizontal = 2
 grow_vertical = 2
 alignment = 1
 
-[node name="HealthBarEnemy" parent="Wolf" instance=ExtResource("17_irwwl")]
+[node name="HealthBarEnemy" parent="SubViewport/Wolf" instance=ExtResource("17_irwwl")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(5, 10)
 anchors_preset = 8
@@ -697,8 +692,7 @@ offset_right = 67.5
 offset_bottom = -54.0
 scale = Vector2(0.5, 0.5)
 
-[node name="PlayerPanel" type="Panel" parent="."]
-layout_mode = 1
+[node name="PlayerPanel" type="Panel" parent="SubViewport"]
 anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
@@ -707,7 +701,7 @@ offset_top = -120.0
 grow_horizontal = 2
 grow_vertical = 0
 
-[node name="PlayerData" type="HBoxContainer" parent="PlayerPanel"]
+[node name="PlayerData" type="HBoxContainer" parent="SubViewport/PlayerPanel"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = -0.0217014
@@ -718,7 +712,7 @@ grow_vertical = 2
 theme_override_constants/separation = 4
 metadata/_edit_use_anchors_ = true
 
-[node name="Label" type="Label" parent="PlayerPanel/PlayerData"]
+[node name="Label" type="Label" parent="SubViewport/PlayerPanel/PlayerData"]
 layout_mode = 2
 size_flags_horizontal = 6
 theme_override_fonts/font = ExtResource("16_eqlww")
@@ -726,12 +720,11 @@ theme_override_font_sizes/font_size = 50
 text = "Player"
 vertical_alignment = 1
 
-[node name="HealthBar" parent="PlayerPanel/PlayerData" instance=ExtResource("17_irwwl")]
+[node name="HealthBar" parent="SubViewport/PlayerPanel/PlayerData" instance=ExtResource("17_irwwl")]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="Actions" type="Panel" parent="."]
-layout_mode = 1
+[node name="Actions" type="Panel" parent="SubViewport"]
 anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
@@ -742,7 +735,7 @@ grow_horizontal = 2
 grow_vertical = 0
 metadata/_edit_use_anchors_ = true
 
-[node name="Actions" type="HBoxContainer" parent="Actions"]
+[node name="Actions" type="HBoxContainer" parent="SubViewport/Actions"]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -752,7 +745,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = SubResource("GDScript_mfifw")
 
-[node name="Basic Attack" type="Button" parent="Actions/Actions"]
+[node name="Basic Attack" type="Button" parent="SubViewport/Actions/Actions"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 5
@@ -765,7 +758,7 @@ theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_ievnh")
 text = "Basic Attack"
 script = SubResource("GDScript_2okb1")
 
-[node name="Special Attack" type="Button" parent="Actions/Actions"]
+[node name="Special Attack" type="Button" parent="SubViewport/Actions/Actions"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 5
@@ -778,7 +771,7 @@ theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_ievnh")
 text = "Special Attack"
 script = SubResource("GDScript_g2mqt")
 
-[node name="Items" type="Button" parent="Actions/Actions"]
+[node name="Items" type="Button" parent="SubViewport/Actions/Actions"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 5
@@ -790,8 +783,8 @@ theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxFlat_q4m4s")
 theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_ievnh")
 text = "Items"
 
-[connection signal="animation_finished" from="Knight" to="Actions/Actions" method="_on_knight_animation_finished"]
-[connection signal="animation_finished" from="Knight" to="Actions/Actions/Basic Attack" method="_on_knight_animation_finished"]
-[connection signal="ready" from="Actions/Actions" to="Actions/Actions" method="_on_ready"]
-[connection signal="button_up" from="Actions/Actions/Basic Attack" to="Actions/Actions/Basic Attack" method="_on_button_up"]
-[connection signal="button_up" from="Actions/Actions/Special Attack" to="Actions/Actions/Special Attack" method="_on_button_up"]
+[connection signal="animation_finished" from="SubViewport/Knight" to="SubViewport/Actions/Actions" method="_on_knight_animation_finished"]
+[connection signal="animation_finished" from="SubViewport/Knight" to="SubViewport/Actions/Actions/Basic Attack" method="_on_knight_animation_finished"]
+[connection signal="ready" from="SubViewport/Actions/Actions" to="SubViewport/Actions/Actions" method="_on_ready"]
+[connection signal="button_up" from="SubViewport/Actions/Actions/Basic Attack" to="SubViewport/Actions/Actions/Basic Attack" method="_on_button_up"]
+[connection signal="button_up" from="SubViewport/Actions/Actions/Special Attack" to="SubViewport/Actions/Actions/Special Attack" method="_on_button_up"]

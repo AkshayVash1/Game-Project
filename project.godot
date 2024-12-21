@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="POC-1"
-run/main_scene="res://game.tscn"
+run/main_scene="res://game2.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -23,3 +23,8 @@ project/assembly_name="POC-1"
 
 version_control/plugin_name="GitPlugin"
 version_control/autoload_on_startup=true
+
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0
+environment/defaults/default_clear_color=Color(0.50498, 0.664843, 1, 1)

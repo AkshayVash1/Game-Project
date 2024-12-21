@@ -1,12 +1,12 @@
 [gd_scene load_steps=38 format=3 uid="uid://0ui7x2yuah5n"]
 
-[ext_resource type="Texture2D" uid="uid://cacc4rvbfb0yk" path="res://sprites/Knight 2/Attack 1.png" id="1_6v8on"]
-[ext_resource type="Texture2D" uid="uid://bkgdu0io80m22" path="res://sprites/Knight 2/Protect.png" id="2_p6goc"]
-[ext_resource type="Texture2D" uid="uid://bxge8m18ywn1k" path="res://sprites/Knight 2/Dead.png" id="3_1fvqw"]
-[ext_resource type="Texture2D" uid="uid://b3ay7g8d1kka0" path="res://sprites/Knight 2/Hurt.png" id="4_lychr"]
-[ext_resource type="Texture2D" uid="uid://ct0owie12m20m" path="res://sprites/Knight 2/Idle.png" id="5_miklw"]
-[ext_resource type="Texture2D" uid="uid://chak360u5lc2u" path="res://sprites/Knight 2/Run.png" id="6_a5bbd"]
-[ext_resource type="Texture2D" uid="uid://bj3rf2ot2n06u" path="res://sprites/Knight 2/Run+Attack.png" id="7_123cp"]
+[ext_resource type="Texture2D" uid="uid://cacc4rvbfb0yk" path="res://sprites/Knight/Attack 1.png" id="1_6v8on"]
+[ext_resource type="Texture2D" uid="uid://bkgdu0io80m22" path="res://sprites/Knight/Protect.png" id="2_p6goc"]
+[ext_resource type="Texture2D" uid="uid://bxge8m18ywn1k" path="res://sprites/Knight/Dead.png" id="3_1fvqw"]
+[ext_resource type="Texture2D" uid="uid://b3ay7g8d1kka0" path="res://sprites/Knight/Hurt.png" id="4_lychr"]
+[ext_resource type="Texture2D" uid="uid://ct0owie12m20m" path="res://sprites/Knight/Idle.png" id="5_miklw"]
+[ext_resource type="Texture2D" uid="uid://chak360u5lc2u" path="res://sprites/Knight/Run.png" id="6_a5bbd"]
+[ext_resource type="Texture2D" uid="uid://bj3rf2ot2n06u" path="res://sprites/Knight/Run+Attack.png" id="7_123cp"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wcw2r"]
 atlas = ExtResource("1_6v8on")
