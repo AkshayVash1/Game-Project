@@ -20,26 +20,28 @@ var rotation_speed: float = 0.5
 var orbit_radius: float = 8.0
 var camera_height: float = 3.0
 var angle: float = 0.5
-var enableRotation = false
-var midpoint : Vector3
+var enableRotation: bool = false
+var midpoint: Vector3
 
 func _ready() -> void:
-	midpoint = (%Knight.global_transform.origin + %Wolf.global_transform.origin) * 0.5
-	%Camera3D.position = Vector3(midpoint.x, midpoint.y + orbit_radius, %Camera3D.position.z)
-	var x = midpoint.x + orbit_radius * cos(angle)
-	var z = midpoint.z + orbit_radius * sin(angle)
-	%Camera3D.position = Vector3(x, midpoint.y + camera_height, z)
-	%Camera3D.look_at(midpoint, Vector3.UP)
+	var knight_pos = $Knight.global_transform.origin
+	var wolf_pos = $Wolf.global_transform.origin
+	midpoint = (knight_pos + wolf_pos) * 0.5
+	update_camera_position()
+
 func _process(delta: float) -> void:
 	if enableRotation:
+		update_camera_position()
 		angle += rotation_speed * delta
-		var x = midpoint.x + orbit_radius * cos(angle)
-		var z = midpoint.z + orbit_radius * sin(angle)
-		%Camera3D.position = Vector3(x, midpoint.y + orbit_radius, z)
-		%Camera3D.look_at(midpoint, Vector3.UP)
 		var flipped = int(angle / 3.2) % 2 == 1
-		%Knight.flip_h = !flipped
-		%Wolf.flip_h = flipped
+		$Knight.flip_h = !flipped
+		$Wolf.flip_h = flipped
+
+func update_camera_position() -> void:
+	var x = midpoint.x + orbit_radius * cos(angle)
+	var z = midpoint.z + orbit_radius * sin(angle)
+	$Camera3D.position = Vector3(x, midpoint.y + camera_height, z)
+	$Camera3D.look_at(midpoint, Vector3.UP)
 "
 
 [sub_resource type="GDScript" id="GDScript_wifws"]
